@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>自己紹介 | あなたの名前</title>
+    <meta name="description" content="簡単な自己紹介と各種リンクのページ" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --bg: #f7f7f8;
+        --card: #ffffff;
+        --text: #1f2328;
+        --muted: #5c6166;
+        --accent: #2563eb; /* blue-600 */
+        --border: #e6e8eb;
+        --shadow: 0 6px 20px rgba(0,0,0,0.06);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b0d10;
+          --card: #0f1318;
+          --text: #e6eaf0;
+          --muted: #a2a9b3;
+          --accent: #60a5fa; /* blue-400 */
+          --border: #1c222b;
+          --shadow: 0 6px 24px rgba(0,0,0,0.45);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        padding: 0; margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        line-height: 1.6;
+      }
+      .wrap {
+        max-width: 680px;
+        margin: 5vh auto;
+        padding: 24px;
+        position: relative;
+        z-index: 1; /* show above confetti */
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 28px;
+      }
+      /* Confetti layer */
+      .confetti {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .confetti i {
+        position: absolute;
+        top: -10vh;
+        left: var(--left, 50%);
+        width: var(--w, 8px);
+        height: var(--h, 14px);
+        background: var(--color, #f59e0b);
+        opacity: 0.9;
+        border-radius: 2px;
+        animation: confetti-fall var(--dur, 9s) linear infinite;
+        animation-delay: var(--delay, 0s);
+        will-change: transform;
+      }
+      .confetti i b {
+        display: block;
+        width: 100%;
+        height: 100%;
+        transform-origin: center;
+        animation: confetti-spin var(--spinDur, 2.4s) linear infinite;
+        will-change: transform;
+      }
+      .confetti.paused i,
+      .confetti.paused i b { animation-play-state: paused; }
+      @keyframes confetti-fall {
+        0% { transform: translate3d(0, -10vh, 0); }
+        100% { transform: translate3d(var(--drift, 0px), 110vh, 0); }
+      }
+      @keyframes confetti-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(var(--spin, 720deg)); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .confetti { display: none; }
+      }
+
+      /* Confetti toggle button */
+      .ctrl-btn {
+        position: fixed;
+        right: 16px; bottom: 16px;
+        z-index: 2;
+        width: 42px; height: 42px;
+        display: grid; place-items: center;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        padding: 0;
+        transition: transform .06s ease, border-color .15s ease;
+      }
+      .ctrl-btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+      .ctrl-btn:active { transform: translateY(0); }
+      .ctrl-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 12px;
+      }
+      .avatar {
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+        border: 1px solid var(--border);
+      }
+      h1 { font-size: 24px; margin: 0; }
+      .sub { color: var(--muted); margin-top: 4px; font-size: 14px; }
+      .bio { margin: 12px 0 24px; color: var(--text); }
+
+      .links {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      a.link {
+        display: flex; align-items: center; gap: 12px;
+        text-decoration: none;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: transparent;
+        color: var(--text);
+        transition: transform .06s ease, background .15s ease, border-color .15s ease;
+      }
+      a.link:hover { transform: translateY(-1px); border-color: var(--accent); }
+      a.link:active { transform: translateY(0); }
+      .badge { font-weight: 600; }
+      .hint { color: var(--muted); font-size: 13px; }
+
+      .icon { width: 20px; height: 20px; stroke: currentColor; fill: none; }
+
+      footer { margin-top: 18px; color: var(--muted); font-size: 12px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class="confetti" aria-hidden="true"></div>
+    <button id="toggle-confetti" class="ctrl-btn" type="button" aria-label="紙吹雪: 一時停止" title="紙吹雪: 一時停止">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 6 v12 M16 6 v12" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <main class="wrap">
+      <section class="card" aria-label="自己紹介">
+        <header>
+          <img class="avatar" src="img/logo_blue.png" alt="プロフィール画像" loading="lazy" decoding="async" />
+          <div>
+            <h1>あなたの名前</h1>
+            <div class="sub">自己紹介サイト</div>
+          </div>
+        </header>
+        <p class="bio">
+          ここに簡単な自己紹介を書いてください。活動内容や関心分野、発信テーマなどを一言でまとめると伝わりやすいです。
+        </p>
+
+        <div class="links" role="list">
+          <a class="link" role="listitem" href="https://x.com/ha_chi_co_3" target="_blank" rel="noopener noreferrer" aria-label="X (旧Twitter) へ移動">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4 L20 20 M20 4 L4 20" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="badge">X（旧Twitter）</span>
+            <span class="hint">@ha_chi_co_3</span>
+          </a>
+          <a class="link" role="listitem" href="https://voicy.jp/channel/848374" target="_blank" rel="noopener noreferrer" aria-label="Voicy チャンネルへ移動">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="8" y="3" width="8" height="12" rx="4" ry="4" stroke-width="2"/>
+              <path d="M12 15 v3" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 18 h8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="badge">Voicy</span>
+            <span class="hint">チャンネル 848374</span>
+          </a>
+          <a class="link" role="listitem" href="https://stand.fm/channels/664d9990316143a771a6e869" target="_blank" rel="noopener noreferrer" aria-label="stand.fm チャンネルへ移動">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12a7 7 0 0 1 14 0" stroke-width="2" fill="none"/>
+              <rect x="5" y="12" width="3" height="6" rx="1.5" stroke-width="2"/>
+              <rect x="16" y="12" width="3" height="6" rx="1.5" stroke-width="2"/>
+            </svg>
+            <span class="badge">stand.fm</span>
+            <span class="hint">チャンネルへ</span>
+          </a>
+        </div>
+
+        <footer>
+          © <span id="y"></span> あなたの名前
+        </footer>
+      </section>
+    </main>
+
+    <script>
+      // 年号の自動更新
+      const y = document.getElementById('y');
+      if (y) y.textContent = new Date().getFullYear();
+
+      // 紙吹雪の生成（軽量・リデュースドモーション配慮）
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const layer = document.querySelector('.confetti');
+      if (!reduced && layer) {
+        const colors = ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#a855f7', '#f97316', '#06b6d4', '#eab308'];
+        const count = Math.min(120, Math.max(50, Math.floor(window.innerWidth / 8)));
+        for (let i = 0; i < count; i++) {
+          const el = document.createElement('i');
+          const inner = document.createElement('b');
+          const left = `${Math.random() * 100}%`;
+          const w = `${Math.round(6 + Math.random() * 6)}px`;
+          const h = `${Math.round(10 + Math.random() * 10)}px`;
+          const dur = `${(7 + Math.random() * 6).toFixed(2)}s`;
+          const delay = `${(-dur.replace('s','') * Math.random()).toFixed(2)}s`;
+          const drift = `${Math.round((Math.random() - 0.5) * 160)}px`;
+          const spinTurns = (2 + Math.random() * 4) * (Math.random() < 0.5 ? -1 : 1);
+          const spin = `${spinTurns * 360}deg`;
+          const spinDur = `${(1.4 + Math.random() * 2.2).toFixed(2)}s`;
+          const color = colors[i % colors.length];
+          el.style.setProperty('--left', left);
+          el.style.setProperty('--w', w);
+          el.style.setProperty('--h', h);
+          el.style.setProperty('--dur', dur);
+          el.style.setProperty('--delay', delay);
+          el.style.setProperty('--drift', drift);
+          el.style.setProperty('--color', color);
+          inner.style.setProperty('--spin', spin);
+          inner.style.setProperty('--spinDur', spinDur);
+          el.appendChild(inner);
+          layer.appendChild(el);
+        }
+      }
+
+      // 紙吹雪の一時停止/再開トグル
+      const btn = document.getElementById('toggle-confetti');
+      if (btn && layer) {
+        const setState = (paused) => {
+          layer.classList.toggle('paused', paused);
+          // Update icon and label
+          if (paused) {
+            btn.setAttribute('aria-label', '紙吹雪: 再開');
+            btn.setAttribute('title', '紙吹雪: 再開');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" stroke-width="2"/></svg>';
+          } else {
+            btn.setAttribute('aria-label', '紙吹雪: 一時停止');
+            btn.setAttribute('title', '紙吹雪: 一時停止');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6 v12 M16 6 v12" stroke-width="2" stroke-linecap="round"/></svg>';
+          }
+        };
+        let paused = false;
+        setState(paused);
+        btn.addEventListener('click', () => {
+          paused = !paused;
+          setState(paused);
+        });
+      }
+      // リサイズ時に枚数を見直すのは複雑になるので割愛（必要なら対応可）
+    </script>
+  </body>
+</html>
