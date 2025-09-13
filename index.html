@@ -9,7 +9,7 @@
     <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
     <style>
       :root {
-        --bg: #f7f7f8;
+        --bg: #eaf7c4; /* grass-green with a yellow tint */
         --card: #ffffff;
         --text: #1f2328;
         --muted: #5c6166;
@@ -19,7 +19,7 @@
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #0b0d10;
+          --bg: #0f1f08; /* deep olive-green for dark mode */
           --card: #0f1318;
           --text: #e6eaf0;
           --muted: #a2a9b3;
@@ -50,68 +50,33 @@
         box-shadow: var(--shadow);
         padding: 28px;
       }
-      /* Confetti layer */
-      .confetti {
+      /* Background horses running right-to-left */
+      .horses {
         position: fixed;
         inset: 0;
-        overflow: hidden;
         pointer-events: none;
         z-index: 0;
+        overflow: hidden;
       }
-      .confetti i {
+      .horse {
         position: absolute;
-        top: -10vh;
-        left: var(--left, 50%);
-        width: var(--w, 8px);
-        height: var(--h, 14px);
-        background: var(--color, #f59e0b);
-        opacity: 0.9;
-        border-radius: 2px;
-        animation: confetti-fall var(--dur, 9s) linear infinite;
-        animation-delay: var(--delay, 0s);
+        right: -12vw;
+        bottom: var(--bottom, 12%);
+        font-size: var(--size, 28px);
+        line-height: 1;
+        opacity: 0.95;
+        filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+        transform: translateZ(0);
+        animation: gallop var(--dur, 12s) linear forwards;
         will-change: transform;
       }
-      .confetti i b {
-        display: block;
-        width: 100%;
-        height: 100%;
-        transform-origin: center;
-        animation: confetti-spin var(--spinDur, 2.4s) linear infinite;
-        will-change: transform;
-      }
-      .confetti.paused i,
-      .confetti.paused i b { animation-play-state: paused; }
-      @keyframes confetti-fall {
-        0% { transform: translate3d(0, -10vh, 0); }
-        100% { transform: translate3d(var(--drift, 0px), 110vh, 0); }
-      }
-      @keyframes confetti-spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(var(--spin, 720deg)); }
+      @keyframes gallop {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-120vw); }
       }
       @media (prefers-reduced-motion: reduce) {
-        .confetti { display: none; }
+        .horse { animation-duration: 16s; opacity: 0.85; }
       }
-
-      /* Confetti toggle button */
-      .ctrl-btn {
-        position: fixed;
-        right: 16px; bottom: 16px;
-        z-index: 2;
-        width: 42px; height: 42px;
-        display: grid; place-items: center;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--card);
-        color: var(--text);
-        box-shadow: var(--shadow);
-        cursor: pointer;
-        padding: 0;
-        transition: transform .06s ease, border-color .15s ease;
-      }
-      .ctrl-btn:hover { transform: translateY(-1px); border-color: var(--accent); }
-      .ctrl-btn:active { transform: translateY(0); }
-      .ctrl-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
       header {
         display: flex;
         align-items: center;
@@ -156,12 +121,7 @@
     </style>
   </head>
   <body>
-    <div class="confetti" aria-hidden="true"></div>
-    <button id="toggle-confetti" class="ctrl-btn" type="button" aria-label="紙吹雪: 一時停止" title="紙吹雪: 一時停止">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M8 6 v12 M16 6 v12" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
+    <div class="horses" aria-hidden="true"></div>
     <main class="wrap">
       <section class="card" aria-label="自己紹介">
         <header>
@@ -171,7 +131,7 @@
           </div>
         </header>
         <p class="bio">
-          ハチコです。普段AI活用についてゆる〜く発信しています！よろしくおねがいします♪
+          ハチコです。普段AI活用についてゆる〜く発信しています！よろしくおねがいします♪ 競馬場で馬に一目惚れして乗馬にハマって早10年。
         </p>
 
         <div class="links" role="list">
@@ -211,63 +171,39 @@
       const y = document.getElementById('y');
       if (y) y.textContent = new Date().getFullYear();
 
-      // 紙吹雪の生成（軽量・リデュースドモーション配慮）
+      // 背景で馬が右から左へ走る演出
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const layer = document.querySelector('.confetti');
-      if (!reduced && layer) {
-        const colors = ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#a855f7', '#f97316', '#06b6d4', '#eab308'];
-        const count = Math.min(120, Math.max(50, Math.floor(window.innerWidth / 8)));
-        for (let i = 0; i < count; i++) {
-          const el = document.createElement('i');
-          const inner = document.createElement('b');
-          const left = `${Math.random() * 100}%`;
-          const w = `${Math.round(6 + Math.random() * 6)}px`;
-          const h = `${Math.round(10 + Math.random() * 10)}px`;
-          const dur = `${(7 + Math.random() * 6).toFixed(2)}s`;
-          const delay = `${(-dur.replace('s','') * Math.random()).toFixed(2)}s`;
-          const drift = `${Math.round((Math.random() - 0.5) * 160)}px`;
-          const spinTurns = (2 + Math.random() * 4) * (Math.random() < 0.5 ? -1 : 1);
-          const spin = `${spinTurns * 360}deg`;
-          const spinDur = `${(1.4 + Math.random() * 2.2).toFixed(2)}s`;
-          const color = colors[i % colors.length];
-          el.style.setProperty('--left', left);
-          el.style.setProperty('--w', w);
-          el.style.setProperty('--h', h);
-          el.style.setProperty('--dur', dur);
-          el.style.setProperty('--delay', delay);
-          el.style.setProperty('--drift', drift);
-          el.style.setProperty('--color', color);
-          inner.style.setProperty('--spin', spin);
-          inner.style.setProperty('--spinDur', spinDur);
-          el.appendChild(inner);
-          layer.appendChild(el);
+      const stable = document.querySelector('.horses');
+      const herdColors = ['🐎'];
+      function spawnHorse() {
+        if (!stable) return;
+        const el = document.createElement('span');
+        el.className = 'horse';
+        el.textContent = herdColors[(Math.random() * herdColors.length) | 0];
+        // ランダム配置と速度
+        const bottom = (8 + Math.random() * 60).toFixed(1) + '%';
+        const size = (22 + Math.random() * 18).toFixed(0) + 'px';
+        const dur = (reduced ? 16 + Math.random() * 6 : 10 + Math.random() * 6).toFixed(2) + 's';
+        el.style.setProperty('--bottom', bottom);
+        el.style.setProperty('--size', size);
+        el.style.setProperty('--dur', dur);
+        stable.appendChild(el);
+        const cleanup = () => el.remove();
+        el.addEventListener('animationend', cleanup);
+        setTimeout(cleanup, (parseFloat(dur) * 1000) + 500);
+      }
+      function scheduleRun() {
+        // 1〜3頭を少し間隔を空けて出走
+        const heads = reduced ? 1 : 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < heads; i++) {
+          setTimeout(spawnHorse, i * (reduced ? 600 : 350));
         }
+        // 次の出走タイミング
+        const next = reduced ? (3500 + Math.random() * 2500) : (1500 + Math.random() * 2000);
+        setTimeout(scheduleRun, next);
       }
-
-      // 紙吹雪の一時停止/再開トグル
-      const btn = document.getElementById('toggle-confetti');
-      if (btn && layer) {
-        const setState = (paused) => {
-          layer.classList.toggle('paused', paused);
-          // Update icon and label
-          if (paused) {
-            btn.setAttribute('aria-label', '紙吹雪: 再開');
-            btn.setAttribute('title', '紙吹雪: 再開');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" stroke-width="2"/></svg>';
-          } else {
-            btn.setAttribute('aria-label', '紙吹雪: 一時停止');
-            btn.setAttribute('title', '紙吹雪: 一時停止');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6 v12 M16 6 v12" stroke-width="2" stroke-linecap="round"/></svg>';
-          }
-        };
-        let paused = false;
-        setState(paused);
-        btn.addEventListener('click', () => {
-          paused = !paused;
-          setState(paused);
-        });
-      }
-      // リサイズ時に枚数を見直すのは複雑になるので割愛（必要なら対応可）
+      // 初回出走
+      scheduleRun();
     </script>
   </body>
 </html>
